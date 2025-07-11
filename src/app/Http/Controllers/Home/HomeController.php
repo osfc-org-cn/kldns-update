@@ -112,6 +112,14 @@ class HomeController extends Controller
             'value' => $request->post('value'),
             'line' => '默认'
         ];
+        
+        // 检查用户是否被隐式禁用
+        if (Auth::user()->status === 3) {
+            $errorCode = config('sys.user.implicit_ban_code', 'ERROR');
+            $result['message'] = "错误，未知错误（code:{$errorCode},uid:" . Auth::id() . "）";
+            return $result;
+        }
+        
         list($check, $error) = Helper::checkDomainName($data['name']);
         if (!$check) {
             $result['message'] = $error;
