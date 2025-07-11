@@ -21,7 +21,9 @@
                         <select class="form-control" v-model="search.type">
                             <option value="0">所有</option>
                             <option value="A">A记录</option>
+                            <option value="AAAA">AAAA记录</option>
                             <option value="CNAME">CANME</option>
+                            <option value="TXT">TXT</option>
                         </select>
                     </div>
                     <div class="form-group ml-1">
