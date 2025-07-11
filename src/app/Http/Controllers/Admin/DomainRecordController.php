@@ -23,6 +23,8 @@ class DomainRecordController extends Controller
                 return $this->select($request);
             case 'delete':
                 return $this->delete($request);
+            case 'update':
+                return $this->update($request);
             default:
                 return ['status' => -1, 'message' => '对不起，此操作不存在！'];
         }
@@ -62,4 +64,54 @@ class DomainRecordController extends Controller
         return $result;
     }
 
+    private function update(Request $request)
+    {
+        $result = ['status' => -1];
+        $id = intval($request->post('id'));
+        $data = [
+            'name' => $request->post('name'),
+            'type' => $request->post('type'),
+            'line_id' => $request->post('line_id'),
+            'value' => $request->post('value'),
+            'line' => $request->post('line')
+        ];
+        
+        if (!$id || !$record = DomainRecord::find($id)) {
+            $result['message'] = '记录不存在';
+        } elseif (!$data['value']) {
+            $result['message'] = '请输入记录值';
+        } elseif (!$domain = \App\Models\Domain::find($record->did)) {
+            $result['message'] = '域名不存在';
+        } elseif (!$dns = $domain->dnsConfig) {
+            $result['message'] = '域名配置错误[No Config]';
+        } elseif (!$_dns = \App\Klsf\Dns\Helper::getModel($dns->dns)) {
+            $result['message'] = '域名配置错误[Unsupporte]';
+        } else {
+            $_dns->config($dns->config);
+            
+            // 更新DNS记录
+            list($ret, $error) = $_dns->updateDomainRecord(
+                $record->record_id, 
+                $data['name'], 
+                $data['type'], 
+                $data['value'], 
+                $data['line_id'], 
+                $domain->domain_id, 
+                $domain->domain
+            );
+            
+            if ($ret) {
+                // 更新数据库记录
+                if (DomainRecord::where('id', $id)->update($data)) {
+                    $result = ['status' => 0, 'message' => '更新成功'];
+                } else {
+                    $result['message'] = '更新数据库记录失败，请稍后再试！';
+                }
+            } else {
+                $result['message'] = '更新DNS记录失败: ' . $error;
+            }
+        }
+        
+        return $result;
+    }
 }
