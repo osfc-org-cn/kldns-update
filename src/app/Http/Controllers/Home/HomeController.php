@@ -261,8 +261,18 @@ class HomeController extends Controller
         if (!$id || !$row = DomainRecord::where('id', $id)->where('uid', Auth::id())->first()) {
             $result['message'] = '记录不存在';
         } else {
+            // 获取域名信息，用于返还积分
+            $domain = Domain::find($row->did);
+            
+            // 删除DNS记录
             Helper::deleteRecord($row);
+            
             if ($row->delete()) {
+                // 如果域名存在且有积分设置，返还积分
+                if ($domain && $domain->point > 0) {
+                    User::point(Auth::id(), '返还', $domain->point, "删除记录返还积分[{$row->name}.{$domain->domain}]({$row->line})");
+                }
+                
                 $result = ['status' => 0, 'message' => '删除成功'];
             } else {
                 $result['message'] = '删除失败，请稍后再试！';
