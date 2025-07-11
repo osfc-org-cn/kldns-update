@@ -5,6 +5,7 @@
         <div class="card">
             <div class="card-header">
                 用户列表
+                <a href="#modal-create" data-toggle="modal" class="float-right btn btn-sm btn-primary">添加用户</a>
             </div>
             <div class="card-header">
                 <div class="form-inline">
@@ -180,6 +181,71 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
                         <button type="button" class="btn btn-primary" @click="form('update')">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="modal-create">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">添加新用户</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="form-create">
+                            <input type="hidden" name="action" value="create">
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">用户名</label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="username" class="form-control" placeholder="请输入用户名" required>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">邮箱</label>
+                                <div class="col-sm-10">
+                                    <input type="email" name="email" class="form-control" placeholder="请输入邮箱地址" required>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">密码</label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="password" class="form-control" placeholder="请输入密码" required>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">状态</label>
+                                <div class="col-sm-10">
+                                    <select name="status" class="form-control">
+                                        <option value="0">已禁用</option>
+                                        <option value="1">待认证</option>
+                                        <option value="2" selected>已认证</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">用户组</label>
+                                <div class="col-sm-10">
+                                    <select name="gid" class="form-control">
+                                        @foreach(\App\Models\UserGroup::where('gid','!=',99)->get() as $group)
+                                            <option value="{{ $group->gid }}">{{ $group->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">初始积分</label>
+                                <div class="col-sm-10">
+                                    <input type="number" name="point" class="form-control" value="0" min="0">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" @click="form('create')">创建</button>
                     </div>
                 </div>
             </div>
