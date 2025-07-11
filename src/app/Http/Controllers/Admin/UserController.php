@@ -32,6 +32,8 @@ class UserController extends Controller
                 return $this->select($request);
             case 'delete':
                 return $this->delete($request);
+            case 'create':
+                return $this->create($request);
             default:
                 return ['status' => -1, 'message' => '对不起，此操作不存在！'];
         }
@@ -109,6 +111,58 @@ class UserController extends Controller
         } else {
             $result['message'] = '删除失败，请稍后再试！';
         }
+        return $result;
+    }
+
+    private function create(Request $request)
+    {
+        $result = ['status' => -1];
+        $data = [
+            'username' => $request->post('username'),
+            'email' => $request->post('email'),
+            'gid' => intval($request->post('gid')),
+            'status' => intval($request->post('status')),
+            'point' => intval($request->post('point', 0)),
+            'password' => $request->post('password'),
+            'sid' => md5(uniqid() . Str::random(15))
+        ];
+        
+        // 验证用户名
+        if (empty($data['username']) || strlen($data['username']) < 3) {
+            $result['message'] = '用户名不能为空且长度至少为3个字符';
+        }
+        // 验证邮箱
+        elseif (empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            $result['message'] = '请输入有效的邮箱地址';
+        }
+        // 验证用户组
+        elseif (!UserGroup::find($data['gid'])) {
+            $result['message'] = '用户组不存在';
+        }
+        // 验证密码
+        elseif (empty($data['password']) || strlen($data['password']) < 5) {
+            $result['message'] = '密码不能为空且长度至少为5个字符';
+        }
+        // 验证用户名唯一性
+        elseif (User::where('username', $data['username'])->exists()) {
+            $result['message'] = '用户名已存在';
+        }
+        // 验证邮箱唯一性
+        elseif (User::where('email', $data['email'])->exists()) {
+            $result['message'] = '邮箱已被使用';
+        }
+        else {
+            // 加密密码
+            $data['password'] = Hash::make($data['password']);
+            
+            // 创建用户
+            if ($user = User::create($data)) {
+                $result = ['status' => 0, 'message' => '创建用户成功'];
+            } else {
+                $result['message'] = '创建用户失败，请稍后再试！';
+            }
+        }
+        
         return $result;
     }
 }
