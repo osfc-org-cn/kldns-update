@@ -18,6 +18,7 @@ use App\Models\UserPointRecord;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class HomeController extends Controller
@@ -127,6 +128,55 @@ class HomeController extends Controller
         } elseif (!$_dns = \App\Klsf\Dns\Helper::getModel($dns->dns)) {
             $result['message'] = '域名配置错误[Unsupporte]';
         } else {
+            // 检查服务商是否已有该记录（防止与服务商记录冲突）
+            if (!$id) {
+                try {
+                    $_dns->config($dns->config);
+                    
+                    // 直接从服务商API获取记录列表
+                    list($records, $error) = $_dns->getDomainRecords($domain->domain_id, $domain->domain);
+                    
+                    if (is_array($records)) {
+                        // 标记是否找到匹配记录
+                        $foundMatchingRecord = false;
+                        
+                        foreach ($records as $remoteRecord) {
+                            // 获取记录名称（兼容不同服务商的返回格式）
+                            $recordName = isset($remoteRecord['Name']) ? $remoteRecord['Name'] : 
+                                         (isset($remoteRecord['name']) ? $remoteRecord['name'] : null);
+                                         
+                            // 获取记录ID（兼容不同服务商的返回格式）
+                            $recordId = isset($remoteRecord['RecordId']) ? $remoteRecord['RecordId'] : 
+                                       (isset($remoteRecord['id']) ? $remoteRecord['id'] : null);
+                            
+                            // 检查记录名称是否匹配（不区分大小写）
+                            if ($recordName && strtolower($recordName) === strtolower($data['name'])) {
+                                $foundMatchingRecord = true;
+                                
+                                // 检查数据库中是否有此记录
+                                $existingRecord = DomainRecord::where('record_id', $recordId)->first();
+                                
+                                if ($existingRecord) {
+                                    // 记录存在于数据库，检查是否属于当前用户
+                                    if ($existingRecord->uid != Auth::id()) {
+                                        $result['message'] = '此主机记录已被其他用户使用';
+                                        return $result;
+                                    }
+                                    // 如果是当前用户的记录，允许继续（可能是更新操作）
+                                } else {
+                                    // 记录存在于服务商，但不在数据库中，说明是服务商手动添加的
+                                    $result['message'] = '此主机记录已在服务商存在，请使用其他名称';
+                                    return $result;
+                                }
+                            }
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::error('检查服务商记录失败: ' . $e->getMessage());
+                    // 如果检查失败，继续处理
+                }
+            }
+
             $_dns->config($dns->config);
             $lines = $_dns->getRecordLine($domain->domain_id, $domain->domain);
             foreach ($lines as $line) {
