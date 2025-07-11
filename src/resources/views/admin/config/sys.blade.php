@@ -98,6 +98,13 @@
                             </div>
                         </div>
                         <div class="form-group row">
+                            <label for="staticEmail" class="col-sm-3 col-form-label">邮箱白名单</label>
+                            <div class="col-sm-9">
+                                <textarea class="form-control" name="user[email_whitelist]" rows="5" placeholder="一行一个邮箱，只有白名单内的邮箱才能注册。留空表示不限制。">{{ config('sys.user.email_whitelist', '') }}</textarea>
+                                <div class="input_tips">一行一个邮箱，只有白名单内的邮箱才能注册。留空表示不限制。<br>注意：后台添加用户不受此限制。</div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
                             <label for="staticEmail" class="col-sm-3 col-form-label">注册赠送积分</label>
                             <div class="col-sm-9">
                                 <input type="number" name="user[point]" class="form-control" placeholder="输入注册赠送积分"

@@ -211,7 +211,12 @@ class IndexController extends Controller
             $result['message'] = '此用户名已被注册';
         } elseif (User::where('email', $data['email'])->first()) {
             $result['message'] = '此邮箱已经注册过';
-        } elseif ($user = User::create($data)) {
+        }
+        // 邮箱白名单验证
+        elseif ($this->checkEmailWhitelist($data['email']) === false) {
+            $result['message'] = '此邮箱不在白名单中，无法注册';
+        }
+        elseif ($user = User::create($data)) {
             if ($data['status'] === 2) {
                 $result = ['status' => 0, 'message' => "恭喜您，注册成功，马上登录！"];
             } else {
@@ -222,6 +227,32 @@ class IndexController extends Controller
             $result['message'] = '注册失败，请稍后再试！';
         }
         return $result;
+    }
+
+    /**
+     * 检查邮箱是否在白名单中
+     * @param string $email 要检查的邮箱
+     * @return bool 如果在白名单中或白名单为空返回true，否则返回false
+     */
+    private function checkEmailWhitelist($email)
+    {
+        // 获取邮箱白名单设置
+        $whitelist = config('sys.user.email_whitelist', '');
+
+        // 如果白名单为空，表示不限制
+        if (empty($whitelist)) {
+            return true;
+        }
+
+        // 将白名单字符串按行分割成数组
+        $whitelistArray = explode("\n", str_replace("\r\n", "\n", $whitelist));
+
+        // 清理数组中的空白项
+        $whitelistArray = array_map('trim', $whitelistArray);
+        $whitelistArray = array_filter($whitelistArray);
+
+        // 检查邮箱是否在白名单中
+        return in_array($email, $whitelistArray);
     }
 
     public function check(Request $request)
