@@ -84,7 +84,7 @@ DROP TABLE IF EXISTS `kldns_users`;
 CREATE TABLE `kldns_users` (
   `uid` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `gid` int(10) unsigned NOT NULL DEFAULT '100',
-  `status` tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '0禁用 1待认证 2已认证',
+  `status` tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '0禁用 1待认证 2已认证 3隐式禁用',
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
   `remember_token` varchar(255) DEFAULT NULL,
