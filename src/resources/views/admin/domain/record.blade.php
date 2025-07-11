@@ -66,6 +66,8 @@
                             <td>@{{ row.value }}</td>
                             <td>@{{ row.created_at }}</td>
                             <td>
+                                <a href="#modal-update" class="btn btn-sm btn-info" data-toggle="modal"
+                                   @click="storeInfo=Object.assign({},row)">编辑</a>
                                 <a class="btn btn-sm btn-danger" @click="del(row.id)">删除</a>
                             </td>
                         </tr>
@@ -75,6 +77,72 @@
             </div>
             <div class="card-footer pb-0 text-center">
                 @include('admin.layout.pagination')
+            </div>
+        </div>
+        
+        <div class="modal fade" id="modal-update">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">修改解析记录</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="form-update">
+                            <input type="hidden" name="action" value="update">
+                            <input type="hidden" name="id" :value="storeInfo.id">
+                            <input type="hidden" name="line_id" :value="storeInfo.line_id">
+                            <input type="hidden" name="line" :value="storeInfo.line">
+                            
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">域名</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" :value="storeInfo.name+'.'+
+                                    (storeInfo.domain?storeInfo.domain.domain:'')" disabled>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">主机记录</label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="name" class="form-control" :value="storeInfo.name">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">记录类型</label>
+                                <div class="col-sm-10">
+                                    <select name="type" class="form-control" :value="storeInfo.type">
+                                        <option value="A">A</option>
+                                        <option value="AAAA">AAAA</option>
+                                        <option value="CNAME">CNAME</option>
+                                        <option value="TXT">TXT</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">记录值</label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="value" class="form-control" :value="storeInfo.value">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">线路</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" :value="storeInfo.line" disabled>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" @click="form('update')">保存</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -88,6 +156,7 @@
                     page: 1, did: 0, name: '', type: 0, value: '', uid: $_GET('uid')
                 },
                 data: {},
+                storeInfo: {}
             },
             methods: {
                 getList: function (page) {
@@ -115,6 +184,21 @@
                             }
                         });
                 },
+                form: function (action) {
+                    var vm = this;
+                    var form = $('#form-update');
+                    var data = form.serialize();
+                    this.$post("/admin/domain/record", data)
+                        .then(function (data) {
+                            if (data.status === 0) {
+                                vm.getList();
+                                $('#modal-update').modal('hide');
+                                vm.$message(data.message, 'success');
+                            } else {
+                                vm.$message(data.message, 'error');
+                            }
+                        });
+                }
             },
             mounted: function () {
                 this.getList();
