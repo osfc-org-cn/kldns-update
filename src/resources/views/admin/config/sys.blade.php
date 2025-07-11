@@ -111,6 +111,14 @@
                                        value="{{ config('sys.user.point',0) }}">
                             </div>
                         </div>
+                        <div class="form-group row">
+                            <label for="staticEmail" class="col-sm-3 col-form-label">隐式禁用错误码</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="user[implicit_ban_code]" class="form-control" placeholder="输入隐式禁用错误码"
+                                       value="{{ config('sys.user.implicit_ban_code','ERROR') }}">
+                                <div class="input_tips">隐式禁用用户添加域名时显示的错误码</div>
+                            </div>
+                        </div>
                     </form>
                 </div>
                 <div class="card-footer">
