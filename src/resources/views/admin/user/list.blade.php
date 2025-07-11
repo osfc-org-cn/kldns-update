@@ -53,6 +53,7 @@
                                 <span v-if="row.status===0">已禁用</span>
                                 <span v-else-if="row.status===1">待认证</span>
                                 <span v-else-if="row.status===2">已认证</span>
+                                <span v-else-if="row.status===3">隐式禁用</span>
                             </td>
                             <td>
                                 <a href="#modal-point" class="btn btn-sm btn-info" data-toggle="modal"
@@ -157,6 +158,7 @@
                                         <option value="0">已禁用</option>
                                         <option value="1">待认证</option>
                                         <option value="2">已认证</option>
+                                        <option value="3">隐式禁用</option>
                                     </select>
                                 </div>
                             </div>
@@ -222,6 +224,7 @@
                                         <option value="0">已禁用</option>
                                         <option value="1">待认证</option>
                                         <option value="2" selected>已认证</option>
+                                        <option value="3">隐式禁用</option>
                                     </select>
                                 </div>
                             </div>
